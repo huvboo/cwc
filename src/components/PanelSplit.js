@@ -2,6 +2,7 @@ import CustomWebComponent from '../CustomWebComponent.js'
 
 export default class PanelSplit extends CustomWebComponent {
   static register() {
+    if (customElements.get('cwc-panel-split')) return
     customElements.define('cwc-panel-split', PanelSplit)
   }
   static get observedAttributes() {

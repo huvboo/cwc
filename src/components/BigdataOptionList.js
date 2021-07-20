@@ -1,20 +1,23 @@
+import OptionItem from './OptionItem.js'
 import CustomWebComponent from '../CustomWebComponent.js'
 let dataMap = new Map()
 export default class BigdataOptionList extends CustomWebComponent {
   static register() {
+    if (customElements.get('bigdata-option-list')) return
     customElements.define('bigdata-option-list', BigdataOptionList)
   }
   static get observedAttributes() {
-    return ['maxH', 'value', 'get-data']
+    return ['hmax', 'value', 'get-data']
   }
 
   constructor() {
     super({
+      components: [OptionItem],
       props: {
         /**
          * 最大高度
          */
-        maxH: {
+        hmax: {
           type: Number,
           default: 240,
         },
@@ -95,6 +98,27 @@ export default class BigdataOptionList extends CustomWebComponent {
         top: 0;
         left: 0;
       }
+      option-item {
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+        height: 24px;
+        line-height: 24px;
+        padding: 0 6px;
+        white-space: nowrap;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      option-item:hover {
+        background-color: #eaeaea;
+      }
+      option-item[selected="true"] {
+        color: var(--main-blue);
+      }
+      option-item[disabled="true"] {
+        color: #dddddd;
+        cursor: not-allowed;
+      }
       </style>
   
       <div class="bigdata-option-list">
@@ -123,14 +147,14 @@ export default class BigdataOptionList extends CustomWebComponent {
 
     this.vlist = new Array(this.num)
     for (let i = 0; i < this.num; ++i) {
-      this.vlist[i] = document.createElement('option-item')
+      this.vlist[i] = new OptionItem()
     }
   }
 
   mounted() {
     super.mounted()
 
-    this.root.style.maxHeight = this.maxH + 'px'
+    this.root.style.maxHeight = this.hmax + 'px'
 
     this.chunk.addEventListener('select', this.handleSelect.bind(this))
 
@@ -149,7 +173,6 @@ export default class BigdataOptionList extends CustomWebComponent {
 
   updateData() {
     let result = this['get-data']()
-    console.log(this['get-data'], result)
     if (!result) {
       return false
     } else if (Array.isArray(result)) {
@@ -193,9 +216,8 @@ export default class BigdataOptionList extends CustomWebComponent {
   }
 
   handleSelect(e) {
-    console.log(e)
-    this.value = e.path[0].getAttribute('value')
-    this.dispatchEvent(new CustomEvent('select', { detail: this.value }))
+    this.value = e.detail
+    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
   }
 
   handleQuery(text) {
@@ -210,10 +232,10 @@ export default class BigdataOptionList extends CustomWebComponent {
         (item) =>
           item.label.toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) > -1
       )
+    console.log(dataMap.get(this.uuid).filterOptions)
   }
 
   setData(data) {
-    console.log(data)
     dataMap.get(this.uuid).data = data
     this.resetOptions()
   }
@@ -232,6 +254,7 @@ export default class BigdataOptionList extends CustomWebComponent {
     this.chunkTop = 0
     this.list = this.getList(0, this.num)
     this.root.scrollTo(0, 0)
+    this._updateRendering()
   }
 
   getTotal() {

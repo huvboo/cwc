@@ -3,10 +3,12 @@ export default class CustomWebComponent extends HTMLElement {
     return []
   }
 
-  constructor({ name, props, template }) {
+  constructor({ name, components = [], props = {}, template = '' }) {
     super()
 
     this.name = name
+
+    components.forEach((component) => component.register())
 
     this.props = props
     for (const prop in props) {
@@ -21,9 +23,9 @@ export default class CustomWebComponent extends HTMLElement {
           return this[tempProp]
         },
         set(newValue) {
-          console.warn(
-            `set ${prop}, oldValue:${this[prop]}, newValue:${newValue}`
-          )
+          // console.warn(
+          //   `set ${prop}, oldValue:${this[prop]}, newValue:${newValue}`
+          // )
           this.setAttribute(prop, newValue)
         },
         enumerable: true,
@@ -78,7 +80,7 @@ export default class CustomWebComponent extends HTMLElement {
 
   disconnectedCallback() {
     // 本例子该生命周期未使用，占位示意
-    console.log('自定义元素从页面移除')
+    // console.log('自定义元素从页面移除')
   }
   adoptedCallback() {
     // 本例子该生命周期未使用，占位示意
@@ -86,7 +88,7 @@ export default class CustomWebComponent extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
-    console.log('自定义元素属性发生变化', name, newValue)
+    // console.log('自定义元素属性发生变化', name, newValue)
     if (Object.hasOwnProperty.call(this.props, name)) {
       if (this.props[name].type === Boolean) {
         newValue = newValue == 'true'

@@ -8,7 +8,6 @@
     <script>
       window.onload = function () {
         let list = document.querySelector('bigdata-option-list')
-        console.log('iii')
         list['get-data'] = function () {
           let num = 3000
           let options = new Array(num)
@@ -21,7 +20,7 @@
           }
           return options
         }
-        list.addEventListener('select', (e) => {
+        list.addEventListener('change', (e) => {
           input.value = e.detail
         })
 
@@ -58,7 +57,7 @@
         <cwc-panel-split slot="right" mode="vertical" set="bottom" value="240">
           <div slot="top">
             <input type="text" />
-            <div style="width: 160px">
+            <div style="width: 176px">
               <bigdata-option-list></bigdata-option-list>
             </div>
           </div>

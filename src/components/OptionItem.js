@@ -2,6 +2,7 @@ import CustomWebComponent from '../CustomWebComponent.js'
 
 export default class OptionItem extends CustomWebComponent {
   static register() {
+    if (customElements.get('option-item')) return
     customElements.define('option-item', OptionItem)
   }
   static get observedAttributes() {
@@ -41,28 +42,7 @@ export default class OptionItem extends CustomWebComponent {
         },
       },
       template: `
-      <style>
-      :host {
-        display: block;
-        box-sizing: border-box;
-        width: 100%;
-        height: 24px;
-        line-height: 24px;
-        padding: 0 6px;
-        white-space: nowrap;
-        cursor: pointer;
-      }
-      :host:hover {
-        background-color: #eaeaea;
-      }
-      :host:--selected {
-        color: var(--main-blue);
-      }
-      :host:--disabled {
-        color: #dddddd;
-        cursor: not-allowed;
-      }
-      </style>
+      <style></style>
       `,
     })
   }
@@ -75,25 +55,14 @@ export default class OptionItem extends CustomWebComponent {
 
   handleClick() {
     if (this.disabled) return
-    this.dispatchEvent(new CustomEvent('select', { detail: this.value }))
+    this.dispatchEvent(
+      new CustomEvent('select', { bubbles: true, detail: this.value })
+    )
   }
 
   _updateRendering() {
     super._updateRendering()
 
     this.shadowRoot.childNodes[0].textContent = this.label
-
-    if (this._internals) {
-      if (!this.disabled) {
-        this._internals.states.delete('--disabled')
-      } else {
-        this._internals.states.add('--disabled')
-      }
-      if (!this.selected) {
-        this._internals.states.delete('--selected')
-      } else {
-        this._internals.states.add('--selected')
-      }
-    }
   }
 }
