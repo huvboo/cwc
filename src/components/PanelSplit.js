@@ -1,44 +1,38 @@
 import CustomWebComponent from '../CustomWebComponent.js'
 
 export default class PanelSplit extends CustomWebComponent {
+  static register() {
+    customElements.define('cwc-panel-split', PanelSplit)
+  }
   static get observedAttributes() {
     return ['mode', 'set', 'value', 'min', 'max']
   }
 
   constructor() {
     super({
-      mode: {
-        type: String,
-        default: 'horizontal',
+      props: {
+        mode: {
+          type: String,
+          default: 'horizontal',
+        },
+        set: {
+          type: String,
+          default: 'left',
+        },
+        value: {
+          type: Number,
+          default: 0.5,
+        },
+        min: {
+          type: Number,
+          default: 40,
+        },
+        max: {
+          type: Number,
+          default: 0.95,
+        },
       },
-      set: {
-        type: String,
-        default: 'left',
-      },
-      value: {
-        type: Number,
-        default: 0.5,
-      },
-      min: {
-        type: Number,
-        default: 40,
-      },
-      max: {
-        type: Number,
-        default: 0.95,
-      },
-    })
-
-    this.minOffset = 0
-    this.maxOffset = 0
-    this.offset = 0
-    this.oldOffset = 0
-    this.isMoving = false
-
-    this.style.flexDirection = this.direction
-
-    let template = document.createElement('template')
-    template.innerHTML = `
+      template: `
       <style>
       :host {
         width: 100%;
@@ -94,52 +88,19 @@ export default class PanelSplit extends CustomWebComponent {
         <div part="separator-handle" class="panel-separator-handle"></div>
       </div>
       <div><slot></slot></div>
-      `
+      `,
+    })
 
-    const shadowRoot = this.attachShadow({ mode: 'open' })
-    let cloneContent = template.content.cloneNode(true)
-    shadowRoot.appendChild(cloneContent)
+    this.minOffset = 0
+    this.maxOffset = 0
+    this.offset = 0
+    this.oldOffset = 0
+    this.isMoving = false
 
-    if (this.mode === 'horizontal') {
-      shadowRoot.childNodes[3].className = 'left-panel'
-      shadowRoot.childNodes[3].childNodes[0].name = 'left'
-      shadowRoot.childNodes[7].className = 'right-panel'
-      shadowRoot.childNodes[7].childNodes[0].name = 'right'
-      if (this.set === 'left') {
-        this.setPanel = shadowRoot.childNodes[3]
-        shadowRoot.childNodes[7].classList.add('panel-resizable-flex')
-        shadowRoot.childNodes[7].classList.add('horizontal')
-      } else if (this.set === 'right') {
-        this.setPanel = shadowRoot.childNodes[7]
-        shadowRoot.childNodes[3].classList.add('panel-resizable-flex')
-        shadowRoot.childNodes[3].classList.add('horizontal')
-      }
-    } else if (this.mode === 'vertical') {
-      shadowRoot.childNodes[3].className = 'top-panel'
-      shadowRoot.childNodes[3].childNodes[0].name = 'top'
-      shadowRoot.childNodes[7].className = 'bottom-panel'
-      shadowRoot.childNodes[7].childNodes[0].name = 'bottom'
-      if (this.set === 'top') {
-        this.setPanel = shadowRoot.childNodes[3]
-        shadowRoot.childNodes[7].classList.add('panel-resizable-flex')
-        shadowRoot.childNodes[7].classList.add('vertical')
-      } else if (this.set === 'bottom') {
-        this.setPanel = shadowRoot.childNodes[7]
-        shadowRoot.childNodes[3].classList.add('panel-resizable-flex')
-        shadowRoot.childNodes[3].classList.add('vertical')
-      }
-    }
-
-    this.separator = shadowRoot.childNodes[5]
-    if (this.isHorizontal) {
-      this.separator.classList.add('horizontal')
-    } else {
-      this.separator.classList.add('vertical')
-    }
-    this.separator.addEventListener(
-      'mousedown',
-      this.handleMousedown.bind(this)
-    )
+    this.prevPanel = this.shadowRoot.childNodes[3]
+    this.nextPanel = this.shadowRoot.childNodes[7]
+    this.setPanel = this.prevPanel
+    this.separator = this.shadowRoot.childNodes[5]
   }
 
   get isHorizontal() {
@@ -152,6 +113,51 @@ export default class PanelSplit extends CustomWebComponent {
 
   get isSetlatter() {
     return this.isHorizontal ? this.set === 'right' : this.set === 'bottom'
+  }
+
+  mounted() {
+    super.mounted()
+
+    this.style.flexDirection = this.direction
+
+    if (this.isHorizontal) {
+      this.prevPanel.className = 'left-panel'
+      this.prevPanel.childNodes[0].name = 'left'
+      this.nextPanel.className = 'right-panel'
+      this.nextPanel.childNodes[0].name = 'right'
+      if (this.set === 'left') {
+        this.setPanel = this.prevPanel
+        this.nextPanel.classList.add('panel-resizable-flex')
+        this.nextPanel.classList.add('horizontal')
+      } else if (this.set === 'right') {
+        this.setPanel = this.nextPanel
+        this.prevPanel.classList.add('panel-resizable-flex')
+        this.prevPanel.classList.add('horizontal')
+      }
+      this.separator.classList.add('horizontal')
+    } else {
+      this.prevPanel.className = 'top-panel'
+      this.prevPanel.childNodes[0].name = 'top'
+      this.nextPanel.className = 'bottom-panel'
+      this.nextPanel.childNodes[0].name = 'bottom'
+      if (this.set === 'top') {
+        this.setPanel = this.prevPanel
+        this.nextPanel.classList.add('panel-resizable-flex')
+        this.nextPanel.classList.add('vertical')
+      } else if (this.set === 'bottom') {
+        this.setPanel = this.nextPanel
+        this.prevPanel.classList.add('panel-resizable-flex')
+        this.prevPanel.classList.add('vertical')
+      }
+      this.separator.classList.add('vertical')
+    }
+
+    this.separator.addEventListener(
+      'mousedown',
+      this.handleMousedown.bind(this)
+    )
+
+    this._updateRendering()
   }
 
   _updateRendering() {
@@ -169,7 +175,6 @@ export default class PanelSplit extends CustomWebComponent {
     this.maxOffset = this.max > 1 ? this.max : this.max * boxSize
     let value = this.value > 1 ? this.value : this.value * boxSize
     this.offset = Math.max(this.minOffset, Math.min(this.maxOffset, value))
-    console.log(this.offset)
   }
 
   render() {

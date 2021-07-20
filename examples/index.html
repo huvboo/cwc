@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script>
+      window.onload = function () {
+        let list = document.querySelector('bigdata-option-list')
+        console.log('iii')
+        list['get-data'] = function () {
+          let num = 3000
+          let options = new Array(num)
+          for (let i = 0; i < num; ++i) {
+            options[i] = {
+              value: i,
+              label: '可选项' + i,
+              disabled: false,
+            }
+          }
+          return options
+        }
+        list.addEventListener('select', (e) => {
+          input.value = e.detail
+        })
+
+        let input = document.querySelector('input')
+        input.addEventListener('change', (e) => {
+          list.value = e.target.value
+        })
+        input.value = 3
+        input.dispatchEvent(new Event('change'))
+      }
+    </script>
+    <script type="module" src="./main.js"></script>
+    <style>
+      :root {
+        --main-blue: #198cff;
+      }
+
+      .container {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <cwc-panel-split value="240">
+        <div slot="left">
+          <button is="cwc-button">cwc-button</button>
+        </div>
+        <div slot="right"></div>
+        <cwc-panel-split slot="right" mode="vertical" set="bottom" value="240">
+          <div slot="top">
+            <input type="text" />
+            <div style="width: 160px">
+              <bigdata-option-list></bigdata-option-list>
+            </div>
+          </div>
+          <div slot="bottom">
+            <button is="cwc-button">cwc-button</button>
+          </div>
+        </cwc-panel-split>
+      </cwc-panel-split>
+    </div>
+  </body>
+</html>
