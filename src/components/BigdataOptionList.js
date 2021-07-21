@@ -84,7 +84,6 @@ export default class BigdataOptionList extends CustomWebComponent {
         box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
         background: #fff;
         overflow: auto;
-        user-select: none;
       }
       .bigdata-option-filter {
         width: 100%;
@@ -108,6 +107,7 @@ export default class BigdataOptionList extends CustomWebComponent {
         white-space: nowrap;
         cursor: pointer;
         font-size: 14px;
+        user-select: none;
       }
       option-item:hover {
         background-color: #eaeaea;
@@ -140,9 +140,9 @@ export default class BigdataOptionList extends CustomWebComponent {
 
     dataMap.set(this.uuid, { data: [], filterOptions: [] })
 
-    this.root = this.shadowRoot.childNodes[3]
-    this.tip = this.root.childNodes[1]
-    this.filter = this.root.childNodes[3]
+    this.box = this.shadowRoot.childNodes[3]
+    this.tip = this.box.childNodes[1]
+    this.filter = this.box.childNodes[3]
     this.chunk = this.filter.childNodes[1]
 
     this.vlist = new Array(this.num)
@@ -154,11 +154,11 @@ export default class BigdataOptionList extends CustomWebComponent {
   mounted() {
     super.mounted()
 
-    this.root.style.maxHeight = this.hmax + 'px'
+    this.box.style.maxHeight = this.hmax + 'px'
 
     this.chunk.addEventListener('select', this.handleSelect.bind(this))
 
-    this.root.addEventListener('scroll', this.handleScroll.bind(this))
+    this.box.addEventListener('scroll', this.handleScroll.bind(this))
 
     this.updateData()
   }
@@ -197,11 +197,11 @@ export default class BigdataOptionList extends CustomWebComponent {
   }
 
   getOption(value) {
-    return dataMap.get(this.uuid).data.find((item) => item.value === value)
+    return dataMap.get(this.uuid).data.find((item) => item.value == value)
   }
 
   handleScroll() {
-    let scrollTop = this.root.scrollTop
+    let scrollTop = this.box.scrollTop
     let index = Math.floor(scrollTop / 24)
     if (index > this.num / 2) {
       let start = this.num / 3 + index - this.num / 2
@@ -216,8 +216,9 @@ export default class BigdataOptionList extends CustomWebComponent {
   }
 
   handleSelect(e) {
-    this.value = e.detail
-    this.dispatchEvent(new CustomEvent('change', { detail: this.value }))
+    e.stopPropagation()
+    this.value = e.detail.value
+    this.dispatchEvent(new CustomEvent('change', { detail: e.detail.value }))
   }
 
   handleQuery(text) {
@@ -253,7 +254,7 @@ export default class BigdataOptionList extends CustomWebComponent {
     this.total = this.getTotal()
     this.chunkTop = 0
     this.list = this.getList(0, this.num)
-    this.root.scrollTo(0, 0)
+    this.box.scrollTo(0, 0)
     this._updateRendering()
   }
 

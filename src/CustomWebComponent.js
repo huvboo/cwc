@@ -43,6 +43,8 @@ export default class CustomWebComponent extends HTMLElement {
     shadowRoot.appendChild(cloneContent)
 
     this.attachInternals()
+
+    this.watch = {}
   }
 
   connectedCallback() {
@@ -103,6 +105,13 @@ export default class CustomWebComponent extends HTMLElement {
       }
       this['_' + name] = newValue
     }
+
+    if (this.watch[name]) {
+      if (typeof this.watch[name] === 'function') {
+        this.watch[name](this[name])
+      }
+    }
+
     // 执行渲染更新
     this._updateRendering()
   }

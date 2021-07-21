@@ -7,8 +7,8 @@
     <title>Document</title>
     <script>
       window.onload = function () {
-        let list = document.querySelector('bigdata-option-list')
-        list['get-data'] = function () {
+        let select = document.querySelector('bigdata-select')
+        select['get-data'] = function () {
           let num = 3000
           let options = new Array(num)
           for (let i = 0; i < num; ++i) {
@@ -20,13 +20,13 @@
           }
           return options
         }
-        list.addEventListener('change', (e) => {
+        select.addEventListener('change', (e) => {
           input.value = e.detail
         })
 
-        let input = document.querySelector('input')
+        let input = document.querySelector('#value')
         input.addEventListener('change', (e) => {
-          list.value = e.target.value
+          select.value = e.target.value
         })
         input.value = 3
         input.dispatchEvent(new Event('change'))
@@ -56,10 +56,12 @@
         <div slot="right"></div>
         <cwc-panel-split slot="right" mode="vertical" set="bottom" value="240">
           <div slot="top">
-            <input type="text" />
             <div style="width: 176px">
               <bigdata-option-list></bigdata-option-list>
             </div>
+
+            <label>Value: <input id="value" type="text" /></label>
+            <bigdata-select></bigdata-select>
           </div>
           <div slot="bottom">
             <button is="cwc-button">cwc-button</button>

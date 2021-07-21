@@ -39,7 +39,6 @@ export default class PanelSplit extends CustomWebComponent {
         width: 100%;
         height: 100%;
         display: flex;
-        user-select: none;
       }
       .panel-resizable-flex {
         flex: 1;

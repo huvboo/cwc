@@ -56,7 +56,7 @@ export default class OptionItem extends CustomWebComponent {
   handleClick() {
     if (this.disabled) return
     this.dispatchEvent(
-      new CustomEvent('select', { bubbles: true, detail: this.value })
+      new CustomEvent('select', { bubbles: true, detail: this })
     )
   }
 
