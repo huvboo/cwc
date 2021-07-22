@@ -20,11 +20,10 @@
           }
           return options
         }
-        select.addEventListener('change', (e) => {
-          input.value = e.detail
-        })
-
         let input = document.querySelector('#value')
+        select.addEventListener('change', (e) => {
+          input.value = e.detail.value
+        })
         input.addEventListener('change', (e) => {
           select.value = e.target.value
         })

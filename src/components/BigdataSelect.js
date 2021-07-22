@@ -1,6 +1,7 @@
 import TransferBox from './TransferBox.js'
 import BigdataOptionList from './BigdataOptionList.js'
 import CustomWebComponent from '../CustomWebComponent.js'
+import Debounce from '../common/Debounce.js'
 
 export default class BigdataSelect extends CustomWebComponent {
   static register() {
@@ -26,8 +27,8 @@ export default class BigdataSelect extends CustomWebComponent {
          * 选择的值
          */
         value: {
-          type: [String, Number],
-          default: '',
+          type: [String, Number, null],
+          default: null,
         },
         label: {
           type: String,
@@ -92,6 +93,7 @@ export default class BigdataSelect extends CustomWebComponent {
 
     this.head = this.shadowRoot.childNodes[3]
     this.input = this.head.childNodes[1]
+    this.tabIndex = -1
 
     this.watch = {
       placeholder: (text) => {
@@ -101,11 +103,15 @@ export default class BigdataSelect extends CustomWebComponent {
         this.input.disabled = bool
         this.expand = false
       },
-      value: () => {
+      value: (value) => {
+        this.list.value = value
         this.reset()
       },
       label: (text) => {
         this.input.value = text
+      },
+      'get-data': (func) => {
+        this.list['get-data'] = func
       },
       expand: (bool) => {
         this.dispatchEvent(new CustomEvent(bool ? 'expand' : 'shrink'))
@@ -117,9 +123,6 @@ export default class BigdataSelect extends CustomWebComponent {
           this.transfer.top = top + height + 3
           this.drop.style.width = width + 'px'
         }
-      },
-      'get-data': (func) => {
-        this.list['get-data'] = func
       },
     }
   }
@@ -140,18 +143,20 @@ export default class BigdataSelect extends CustomWebComponent {
     })
 
     this.input.addEventListener('focus', this.handleFocus.bind(this))
-    // this.input.addEventListener('keyup', this.handleFocus.bind(this))
-    // this.input.addEventListener('change', this.handleQuery.bind(this))
+
+    let dobounce = new Debounce(this.handleQuery.bind(this), 500)
+    this.input.addEventListener('keyup', (e) => dobounce.exec(e))
 
     this.list.addEventListener('change', (e) => {
       this.handleSelect(e.detail)
     })
   }
 
-  handleSelect(value) {
-    this.value = value
+  handleSelect(option) {
+    this.value = option.value
+    this.label = option.label
     this.handleBlur()
-    this.dispatchEvent(new CustomEvent('change', { detail: value }))
+    this.dispatchEvent(new CustomEvent('change', { detail: option }))
   }
 
   handleBlur() {
@@ -165,14 +170,15 @@ export default class BigdataSelect extends CustomWebComponent {
     this.expand = true
   }
 
-  handleQuery(e) {
+  handleQuery() {
     let text = this.input.value
     console.log(text)
-    // this.drop.query(text)
+    this.list.query(text)
   }
 
   reset() {
-    this.label = this.getOption()?.label
+    let option = this.getOption()
+    this.label = option ? option.label : null
     this.list.resetOptions()
   }
 

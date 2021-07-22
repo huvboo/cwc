@@ -1,6 +1,5 @@
 import OptionItem from './OptionItem.js'
 import CustomWebComponent from '../CustomWebComponent.js'
-let dataMap = new Map()
 export default class BigdataOptionList extends CustomWebComponent {
   static register() {
     if (customElements.get('bigdata-option-list')) return
@@ -42,42 +41,43 @@ export default class BigdataOptionList extends CustomWebComponent {
       template: `
       <style>
       /* 滚动条 */
-        ::-webkit-scrollbar-thumb:horizontal {
-          /*水平滚动条的样式*/
-          width: 20px;
-          background-color: #fbfbfb;
-          border-radius: 8px;
-          border: 2px solid #ecebeb;
-        }
-  
-        ::-webkit-scrollbar-track-piece {
-          background-color: #ecebeb; /*滚动条的背景颜色*/
-        }
-  
-        ::-webkit-scrollbar {
-          width: 12px; /*滚动条的宽度*/
-          height: 8px; /*滚动条的高度*/
-        }
-  
-        ::-webkit-scrollbar-thumb:vertical {
-          /*垂直滚动条的样式*/
-          width: 20px;
-          background-color: #fbfbfb;
-          border-radius: 8px;
-          border: 2px solid #ecebeb;
-        }
-  
-        ::-webkit-scrollbar-thumb:hover {
-          /*滚动条的hover样式*/
-          background-color: var(--press-gray);
-        }
-  
-        ::-webkit-scrollbar-button {
-          /*纵方向按钮的高度，宽度由scrollbar定义*/
-          height: 0;
-          /*横方向按钮的高度，高度由scrollbar定义*/
-          width: 0;
-        }
+      ::-webkit-scrollbar-thumb:horizontal {
+        /*水平滚动条的样式*/
+        width: 20px;
+        background-color: #fbfbfb;
+        border-radius: 8px;
+        border: 2px solid #ecebeb;
+      }
+
+      ::-webkit-scrollbar-track-piece {
+        background-color: #ecebeb; /*滚动条的背景颜色*/
+      }
+
+      ::-webkit-scrollbar {
+        width: 12px; /*滚动条的宽度*/
+        height: 8px; /*滚动条的高度*/
+      }
+
+      ::-webkit-scrollbar-thumb:vertical {
+        /*垂直滚动条的样式*/
+        width: 20px;
+        background-color: #fbfbfb;
+        border-radius: 8px;
+        border: 2px solid #ecebeb;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+        /*滚动条的hover样式*/
+        background-color: var(--press-gray);
+      }
+
+      ::-webkit-scrollbar-button {
+        /*纵方向按钮的高度，宽度由scrollbar定义*/
+        height: 0;
+        /*横方向按钮的高度，高度由scrollbar定义*/
+        width: 0;
+      }
+
       .bigdata-option-list {
         max-height: 240px;
         border-top: 0;
@@ -132,23 +132,28 @@ export default class BigdataOptionList extends CustomWebComponent {
       `,
     })
 
-    this.uuid = Date.now() + Math.round(Math.random * 1e6)
     this.num = 24
-    this.total = 0
+    this.raw = []
+    this.filterOptions = []
     this.list = []
     this.chunkTop = 0
-
-    dataMap.set(this.uuid, { data: [], filterOptions: [] })
 
     this.box = this.shadowRoot.childNodes[3]
     this.tip = this.box.childNodes[1]
     this.filter = this.box.childNodes[3]
     this.chunk = this.filter.childNodes[1]
 
-    this.vlist = new Array(this.num)
-    for (let i = 0; i < this.num; ++i) {
-      this.vlist[i] = new OptionItem()
+    this.watch = {
+      hmax: (num) => {},
+      value: (value) => {},
+      'get-data': (func) => {
+        this.updateData()
+      },
     }
+  }
+
+  get total() {
+    return this.filterOptions.length
   }
 
   mounted() {
@@ -161,14 +166,6 @@ export default class BigdataOptionList extends CustomWebComponent {
     this.box.addEventListener('scroll', this.handleScroll.bind(this))
 
     this.updateData()
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    super.attributeChangedCallback(name, oldValue, newValue)
-
-    if (name === 'get-data') {
-      this.updateData()
-    }
   }
 
   updateData() {
@@ -197,7 +194,7 @@ export default class BigdataOptionList extends CustomWebComponent {
   }
 
   getOption(value) {
-    return dataMap.get(this.uuid).data.find((item) => item.value == value)
+    return this.raw.find((item) => item.value == value)
   }
 
   handleScroll() {
@@ -218,26 +215,23 @@ export default class BigdataOptionList extends CustomWebComponent {
   handleSelect(e) {
     e.stopPropagation()
     this.value = e.detail.value
-    this.dispatchEvent(new CustomEvent('change', { detail: e.detail.value }))
+    this.dispatchEvent(new CustomEvent('change', { detail: e.detail }))
   }
 
-  handleQuery(text) {
-    this.updateOptions(text)
+  query(text) {
+    this.filterOptions = this.raw.filter(
+      (item) =>
+        item.label.toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) > -1
+    )
     this.resetRender()
   }
 
-  updateOptions(text) {
-    dataMap.get(this.uuid).filterOptions = dataMap
-      .get(this.uuid)
-      .data.filter(
-        (item) =>
-          item.label.toLocaleLowerCase().indexOf(text.toLocaleLowerCase()) > -1
-      )
-    console.log(dataMap.get(this.uuid).filterOptions)
+  initOptions() {
+    this.filterOptions = this.raw.slice(0)
   }
 
-  setData(data) {
-    dataMap.get(this.uuid).data = data
+  setData(raw) {
+    this.raw = raw
     this.resetOptions()
   }
 
@@ -246,24 +240,15 @@ export default class BigdataOptionList extends CustomWebComponent {
     this.resetRender()
   }
 
-  initOptions() {
-    dataMap.get(this.uuid).filterOptions = dataMap.get(this.uuid).data.slice(0)
-  }
-
   resetRender() {
-    this.total = this.getTotal()
     this.chunkTop = 0
     this.list = this.getList(0, this.num)
     this.box.scrollTo(0, 0)
     this._updateRendering()
   }
 
-  getTotal() {
-    return dataMap.get(this.uuid).filterOptions.length
-  }
-
   getList(start, end) {
-    return dataMap.get(this.uuid).filterOptions.slice(start, end)
+    return this.filterOptions.slice(start, end)
   }
 
   _updateRendering() {
@@ -278,8 +263,8 @@ export default class BigdataOptionList extends CustomWebComponent {
       this.tip.style.display = 'none'
       let list = []
       let optionItem
-      this.list.forEach((item, index) => {
-        optionItem = this.vlist[index]
+      this.list.forEach((item) => {
+        optionItem = new OptionItem()
         optionItem.value = item.value
         optionItem.label = item.label
         optionItem.disabled = !!item.disabled
