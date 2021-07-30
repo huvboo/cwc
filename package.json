@@ -1,5 +1,5 @@
 {
-  "name": "cwc",
+  "name": "@huvboo/cwc",
   "version": "0.0.2",
   "description": "Custom Web Components",
   "main": "src/index.js",
