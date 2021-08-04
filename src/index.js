@@ -3,6 +3,7 @@ import PanelSplit from './components/PanelSplit.js'
 import OptionItem from './components/OptionItem.js'
 import BigdataOptionList from './components/BigdataOptionList.js'
 import BigdataSelect from './components/BigdataSelect.js'
+import WindowController from './components/WindowController.js'
 
 export default {
   Button,
@@ -10,4 +11,5 @@ export default {
   OptionItem,
   BigdataOptionList,
   BigdataSelect,
+  WindowController,
 }

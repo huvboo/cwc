@@ -1,8 +1,9 @@
 {
   "name": "@huvboo/cwc",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Custom Web Components",
   "main": "src/index.js",
+  "type": "module",
   "repository": "https://github.com/huvboo/cwc.git",
   "author": "huvboo <huvboo@126.com>",
   "license": "MPL2",
