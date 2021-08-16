@@ -1,4 +1,4 @@
-supportTypes = [Boolean, Number, String]
+const supportTypes = [Boolean, Number, String]
 
 export default function setFromAttribute(prop, attrValue) {
   let option = this.props[prop]
