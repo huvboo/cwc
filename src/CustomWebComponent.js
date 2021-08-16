@@ -53,7 +53,7 @@ export default class CustomWebComponent extends HTMLElement {
   attributeChangedCallback(name, oldValue, attrValue) {
     // console.log('自定义元素属性发生变化', name, oldValue, attrValue)
     if (Object.hasOwnProperty.call(this.props, name)) {
-      setFromAttribute.call(this, this.props[name], attrValue)
+      setFromAttribute.call(this, name, attrValue)
     }
 
     // 执行渲染更新
