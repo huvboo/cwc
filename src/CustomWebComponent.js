@@ -18,10 +18,10 @@ export default class CustomWebComponent extends HTMLElement {
     components.forEach((component) => component.register())
 
     this.props = props
-    proxyProps(props).call(this)
+    proxyProps.call(this, props)
 
     this.template = template
-    useTemplate(template).call(this)
+    useTemplate.call(this, template)
 
     this.attachInternals()
   }
@@ -30,7 +30,7 @@ export default class CustomWebComponent extends HTMLElement {
     // console.log('自定义元素加入页面', this)
 
     for (const prop in this.props) {
-      setFromAttribute(prop, this.getAttribute(prop)).call(this)
+      setFromAttribute.call(this, prop, this.getAttribute(prop))
     }
 
     this.mounted()
@@ -53,7 +53,7 @@ export default class CustomWebComponent extends HTMLElement {
   attributeChangedCallback(name, oldValue, attrValue) {
     // console.log('自定义元素属性发生变化', name, oldValue, attrValue)
     if (Object.hasOwnProperty.call(this.props, name)) {
-      setFromAttribute(this.props[name], attrValue).call(this)
+      setFromAttribute.call(this, this.props[name], attrValue)
     }
 
     // 执行渲染更新
