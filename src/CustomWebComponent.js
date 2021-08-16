@@ -1,76 +1,36 @@
+import proxyProps from './proxy'
+import useTemplate from './useTemplate'
+import setFromAttribute from './setFromAttrubite'
+
 export default class CustomWebComponent extends HTMLElement {
+  static register() {}
+
   static get observedAttributes() {
     return []
   }
 
-  constructor({ name, components = [], props = {}, template = '' }) {
+  constructor({ components = [], props = {}, template = '' }) {
     super()
 
-    this.name = name
+    this.watch = {}
 
+    this.components = components
     components.forEach((component) => component.register())
 
     this.props = props
-    for (const prop in props) {
-      const tempProp = '_' + prop
-      Object.defineProperty(this, tempProp, {
-        value: props[prop].default,
-        writable: true,
-        configurable: true,
-      })
-      Object.defineProperty(this, prop, {
-        get() {
-          return this[tempProp]
-        },
-        set(newValue) {
-          // console.warn(
-          //   `set ${prop}, oldValue:${this[prop]}, newValue:${newValue}`
-          // )
-          this.setAttribute(prop, newValue)
-        },
-        enumerable: true,
-        configurable: true,
-      })
-    }
+    proxyProps(props).call(this)
 
     this.template = template
-
-    let oTemplate = document.createElement('template')
-    oTemplate.innerHTML = template
-    let cloneContent = oTemplate.content.cloneNode(true)
-
-    let shadowRoot = this.attachShadow({ mode: 'open' })
-    shadowRoot.appendChild(cloneContent)
+    useTemplate(template).call(this)
 
     this.attachInternals()
-
-    this.watch = {}
   }
 
   connectedCallback() {
     // console.log('自定义元素加入页面', this)
 
     for (const prop in this.props) {
-      let option = this.props[prop]
-      let attrValue = this.getAttribute(prop)
-      if (attrValue !== undefined && attrValue !== null) {
-        if (option.type === Boolean) {
-          attrValue = attrValue == 'true'
-        } else if (option.type === Number) {
-          attrValue = Number(attrValue)
-        } else if (option.type === Function) {
-          let content = attrValue.substring(
-            attrValue.indexOf('{') + 1,
-            attrValue.lastIndexOf('}') - 1
-          )
-          attrValue = new Function(content)
-        }
-        if (attrValue !== option.default) {
-          this[prop] = attrValue
-        }
-      } else {
-        this.setAttribute(prop, option.default)
-      }
+      setFromAttribute(prop, this.getAttribute(prop)).call(this)
     }
 
     this.mounted()
@@ -84,32 +44,16 @@ export default class CustomWebComponent extends HTMLElement {
     // 本例子该生命周期未使用，占位示意
     // console.log('自定义元素从页面移除')
   }
+
   adoptedCallback() {
     // 本例子该生命周期未使用，占位示意
     console.log('自定义元素转移到新页面')
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    // console.log('自定义元素属性发生变化', name, newValue)
+  attributeChangedCallback(name, oldValue, attrValue) {
+    // console.log('自定义元素属性发生变化', name, oldValue, attrValue)
     if (Object.hasOwnProperty.call(this.props, name)) {
-      if (this.props[name].type === Boolean) {
-        newValue = newValue == 'true'
-      } else if (this.props[name].type === Number) {
-        newValue = Number(newValue)
-      } else if (this.props[name].type === Function) {
-        let content = newValue.substring(
-          newValue.indexOf('{') + 1,
-          newValue.lastIndexOf('}') - 1
-        )
-        newValue = new Function(content)
-      }
-      this['_' + name] = newValue
-    }
-
-    if (this.watch[name]) {
-      if (typeof this.watch[name] === 'function') {
-        this.watch[name](this[name])
-      }
+      setFromAttribute(this.props[name], attrValue).call(this)
     }
 
     // 执行渲染更新
