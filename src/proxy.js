@@ -35,13 +35,14 @@ export default function proxyProps(props) {
           if (typeof newValue !== 'function') {
             error(prop, this.props[prop].type, newValue)
           }
-        } else {
-          let oldValue = this[prop]
-          if (oldValue !== newValue) {
-            this['_' + prop] = newValue
-            if (this.watch[prop] && typeof this.watch[prop] === 'function') {
-              this.watch[prop](this[prop], oldValue)
-            }
+        }
+
+        let oldValue = this[prop]
+        console.log(prop, newValue, oldValue)
+        if (oldValue !== newValue) {
+          this['_' + prop] = newValue
+          if (this.watch[prop] && typeof this.watch[prop] === 'function') {
+            this.watch[prop](newValue, oldValue)
           }
         }
       },
