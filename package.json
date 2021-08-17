@@ -1,6 +1,6 @@
 {
   "name": "@huvboo/cwc",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Custom Web Components",
   "main": "src/index.js",
   "type": "module",
