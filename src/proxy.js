@@ -42,7 +42,7 @@ export default function proxyProps(props) {
         if (oldValue !== newValue) {
           this['_' + prop] = newValue
           if (this.watch[prop] && typeof this.watch[prop] === 'function') {
-            this.watch[prop](newValue, oldValue)
+            this.watch[prop].call(this, newValue, oldValue)
           }
         }
       },
