@@ -1,3 +1,10 @@
-import CustomWebComponent from './CustomWebComponent.js'
+import CwcButtom from './ui/cwc-buttom.js'
 
-export default CustomWebComponent
+let btn = new CwcButtom()
+btn.setAttribute('style', 'color: #F00;')
+
+btn.style.color = '#00F'
+
+console.log(btn)
+
+document.body.appendChild(btn)
