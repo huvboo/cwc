@@ -1,59 +1,55 @@
-import proxyProps from './proxy'
-import useTemplate from './useTemplate'
-import setFromAttribute from './setFromAttrubite'
+const supportTypes = [Boolean, Number, String]
 
-export default class CustomWebComponent extends HTMLElement {
+function error(prop, type, newValue) {
+  console.error(`属性 ${prop} 的值类型必须为 ${type}, ${newValue} 不满足要求`)
+}
+class CustomWebComponent extends HTMLElement {
   static register() {}
 
   static get observedAttributes() {
-    return []
+    return ['style']
   }
 
-  constructor({ components = [], props = {}, template = '' }) {
+  constructor({ props = {}, template = '' }) {
     super()
 
     this.watch = {}
 
-    this.components = components
-    components.forEach((component) => component.register())
-
     this.props = props
-    proxyProps(props).call(this)
+    this.proxyProps(props)
 
     this.template = template
-    useTemplate(template).call(this)
+    this.useTemplate(template)
 
-    this.attachInternals()
-  }
-
-  connectedCallback() {
-    // console.log('自定义元素加入页面', this)
-
-    for (const prop in this.props) {
-      setFromAttribute(prop, this.getAttribute(prop)).call(this)
-    }
-
-    this.mounted()
+    this.internals = this.attachInternals()
   }
 
   mounted() {
     // console.log('mounted')
   }
 
+  connectedCallback() {
+    // console.log('connected', this)
+
+    for (const prop in this.props) {
+      this.setFromAttribute(prop, this.getAttribute(prop))
+    }
+
+    this.mounted()
+  }
+
   disconnectedCallback() {
-    // 本例子该生命周期未使用，占位示意
-    // console.log('自定义元素从页面移除')
+    // console.log('disconnected')
   }
 
   adoptedCallback() {
-    // 本例子该生命周期未使用，占位示意
-    console.log('自定义元素转移到新页面')
+    // console.log('adopted')
   }
 
   attributeChangedCallback(name, oldValue, attrValue) {
-    // console.log('自定义元素属性发生变化', name, oldValue, attrValue)
+    console.log('自定义元素属性发生变化', name, oldValue, attrValue)
     if (Object.hasOwnProperty.call(this.props, name)) {
-      setFromAttribute(this.props[name], attrValue).call(this)
+      this.setFromAttribute(this.props[name], attrValue)
     }
 
     // 执行渲染更新
@@ -63,4 +59,77 @@ export default class CustomWebComponent extends HTMLElement {
   _updateRendering() {
     // console.log('执行渲染更新')
   }
+
+  proxyProps(props) {
+    for (const prop in props) {
+      const tempProp = '_' + prop
+      Object.defineProperty(this, tempProp, {
+        value: props[prop].default,
+        writable: true,
+        configurable: true,
+      })
+      Object.defineProperty(this, prop, {
+        get() {
+          return this[tempProp]
+        },
+        set(newValue) {
+          if (this.props[prop].type === Boolean) {
+            if (typeof newValue !== 'boolean') {
+              error(prop, this.props[prop].type, newValue)
+            }
+          } else if (this.props[prop].type === String) {
+            if (typeof newValue !== 'string') {
+              error(prop, this.props[prop].type, newValue)
+            }
+          } else if (this.props[prop].type === Number) {
+            if (!Number.isFinite(newValue)) {
+              error(prop, this.props[prop].type, newValue)
+            }
+          } else if (this.props[prop].type === Array) {
+            if (!Array.isArray(newValue)) {
+              error(prop, this.props[prop].type, newValue)
+            }
+          } else if (this.props[prop].type === Function) {
+            if (typeof newValue !== 'function') {
+              error(prop, this.props[prop].type, newValue)
+            }
+          } else {
+            let oldValue = this[prop]
+            if (oldValue !== newValue) {
+              this['_' + prop] = newValue
+              if (this.watch[prop] && typeof this.watch[prop] === 'function') {
+                this.watch[prop](this[prop], oldValue)
+              }
+            }
+          }
+        },
+        enumerable: true,
+        configurable: true,
+      })
+    }
+  }
+
+  useTemplate(template) {
+    let oTemplate = document.createElement('template')
+    oTemplate.innerHTML = template
+    let cloneContent = oTemplate.content.cloneNode(true)
+
+    let shadowRoot = this.attachShadow({ mode: 'open' })
+    shadowRoot.appendChild(cloneContent)
+  }
+
+  setFromAttribute(prop, attrValue) {
+    let option = this.props[prop]
+    if (!supportTypes.includes(option.type)) return
+    if (attrValue !== undefined && attrValue !== null) {
+      if (option.type === Boolean) {
+        attrValue = attrValue == 'true'
+      } else if (option.type === Number) {
+        attrValue = Number(attrValue)
+      }
+      this[prop] = attrValue
+    }
+  }
 }
+
+export default CustomWebComponent
