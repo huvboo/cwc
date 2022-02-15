@@ -1,3 +1,16 @@
-import CustomWebComponent from './CustomWebComponent.js'
+import CwcButtom from './ui/cwc-buttom.js'
 
-export default CustomWebComponent
+let submit = new CwcButtom({
+  label: '确定',
+  backgroundColor: 'rgb(27,161,226)',
+})
+submit.addEventListener('click', () => {
+  alert('Submit!')
+})
+document.body.appendChild(submit)
+
+let cancel = new CwcButtom({ label: '取消', backgroundColor: 'rgb(229,20,0)' })
+cancel.addEventListener('click', () => {
+  alert('Cancel!')
+})
+document.body.appendChild(cancel)
