@@ -1,10 +1,16 @@
 import CwcButtom from './ui/cwc-buttom.js'
 
-let btn = new CwcButtom()
-btn.setAttribute('style', 'color: #F00;')
+let submit = new CwcButtom({
+  label: '确定',
+  backgroundColor: 'rgb(27,161,226)',
+})
+submit.addEventListener('click', () => {
+  alert('Submit!')
+})
+document.body.appendChild(submit)
 
-btn.style.color = '#00F'
-
-console.log(btn)
-
-document.body.appendChild(btn)
+let cancel = new CwcButtom({ label: '取消', backgroundColor: 'rgb(229,20,0)' })
+cancel.addEventListener('click', () => {
+  alert('Cancel!')
+})
+document.body.appendChild(cancel)
