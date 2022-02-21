@@ -1,6 +1,6 @@
 import CustomWebComponent from '../CustomWebComponent.js'
 
-class CwcButtom extends CustomWebComponent {
+class Button extends CustomWebComponent {
   constructor(props = { label: 'Button', backgroundColor, color }) {
     super({
       props,
@@ -29,6 +29,6 @@ class CwcButtom extends CustomWebComponent {
   }
 }
 
-customElements.define('cwc-button', CwcButtom)
+customElements.define('cwc-button', Button)
 
-export default CwcButtom
+export default Button
