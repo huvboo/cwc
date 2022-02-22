@@ -10,18 +10,16 @@ class CustomWebComponent extends HTMLElement {
     return ['style']
   }
 
-  constructor({ props = {}, template = '' }) {
+  constructor({ props = {}, watch = {}, template = '' }) {
     super()
 
-    this.watch = {}
+    this.watch = watch
 
     this.props = props
     this.proxyProps(props)
 
     this.template = template
     this.useTemplate(template)
-
-    this.internals = this.attachInternals()
   }
 
   mounted() {
@@ -64,7 +62,11 @@ class CustomWebComponent extends HTMLElement {
     for (const prop in props) {
       const tempProp = '_' + prop
       Object.defineProperty(this, tempProp, {
-        value: props[prop].default,
+        value: ['boolean', 'number', 'string', 'array'].includes(
+          typeof props[prop]
+        )
+          ? props[prop]
+          : props[prop].default,
         writable: true,
         configurable: true,
       })
