@@ -29,9 +29,8 @@ document.body.appendChild(t2)
 import TextBox from './ui/TextBox.js'
 
 let textBox = new TextBox({
-  placeholder: 'input',
   value: '北京',
+  placeholder: 'input',
 })
-// textBox.setAttribute('disabled', true)
-console.log(textBox)
+
 document.body.appendChild(textBox)
