@@ -22,7 +22,7 @@ class Button extends CustomWebComponent {
       `,
     })
 
-    this.internals.shadowRoot.childNodes[0].nodeValue = this.props.label
+    this.shadowRoot.childNodes[0].nodeValue = this.props.label
     if (this.props.backgroundColor)
       this.style.backgroundColor = this.props.backgroundColor
     if (this.props.color) this.style.color = this.props.color
